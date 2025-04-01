@@ -39,10 +39,14 @@ class BaseBackend(object):
     ) -> dict:
         raise NotImplementedError
 
-    def send_pattern(self, pattern_id: int, to: str, args: List[str], **kwargs: Any) -> dict:
+    def send_pattern(
+        self, pattern_id: int, to: str, args: List[str], **kwargs: Any
+    ) -> dict:
         raise NotImplementedError
 
-    def send_multiple(self, texts: List[str], recipients: List[str], **kwargs: Any) -> dict:
+    def send_multiple(
+        self, texts: List[str], recipients: List[str], **kwargs: Any
+    ) -> dict:
         raise NotImplementedError
 
     def get_credit(self) -> int:

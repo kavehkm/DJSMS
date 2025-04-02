@@ -25,7 +25,7 @@ class MeliPayamak(BaseBackend):
             raise SMSImproperlyConfiguredError("Invalid token.")
         # validate number
         if number is not None:
-            if not isinstance(number, str) or not re.match("^\d{4,}$", number):
+            if not isinstance(number, str) or not re.match("^\d{4,}$", number):  # noqa
                 raise SMSImproperlyConfiguredError("Invalid number.")
         # validate patterns
         if patterns is not None:
@@ -43,6 +43,10 @@ class MeliPayamak(BaseBackend):
     def token(self) -> str:
         return self._get_config("token")
 
+    @property
+    def patterns(self) -> list:
+        return self._get_config("patterns")
+
     def get_url(self, path: str) -> str:
         return f"{BASE_URL}/{path}/{self.token}"
 
@@ -51,6 +55,13 @@ class MeliPayamak(BaseBackend):
 
     def get_udh(self, kwargs: Any) -> str:
         return kwargs.get("udh", self._get_config("udh", ""))
+
+    def get_pattern(self, pattern_id: int) -> dict:
+        patterns = self.patterns or []
+        for pattern in patterns:
+            if pattern["id"] == pattern_id:
+                return pattern
+        raise SMSImproperlyConfiguredError("Pattern does not exist.")
 
     def send(self, text: str, to: str, **kwargs: Any) -> dict:
         url = self.get_url("send/simple")
@@ -97,7 +108,8 @@ class MeliPayamak(BaseBackend):
         self, pattern_id: int, to: str, args: List[str], **kwargs: Any
     ) -> dict:
         url = self.get_url("send/shared")
-        data = {"bodyId": pattern_id, "to": to, "args": args}
+        pattern = self.get_pattern(pattern_id)
+        data = {"bodyId": pattern["id"], "to": to, "args": args}
         res = requests.post(url, json=data)
         return res.json()
 

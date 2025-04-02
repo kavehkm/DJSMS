@@ -20,22 +20,23 @@ class MeliPayamak(BaseBackend):
         token = config.get("token")
         number = config.get("number")
         patterns = config.get("patterns")
-
         # validate token
         if not token or not isinstance(token, str):
             raise SMSImproperlyConfiguredError("Invalid token.")
         # validate number
         if number is not None:
-            if not isinstance(number, str) or re.match("^\d{4,}$", number):
+            if not isinstance(number, str) or not re.match("^\d{4,}$", number):
                 raise SMSImproperlyConfiguredError("Invalid number.")
         # validate patterns
-        if not isinstance(patterns, list):
-            raise SMSImproperlyConfiguredError("Invalid patterns.")
-        for pattern in patterns:
-            if not isinstance(pattern, dict) or not all(
-                key in pattern for key in ("id", "name", "body")
-            ):
-                raise SMSImproperlyConfiguredError("Invalid patterns")
+        if patterns is not None:
+            if not isinstance(patterns, list):
+                raise SMSImproperlyConfiguredError("Invalid patterns.")
+            for pattern in patterns:
+                if not isinstance(pattern, dict) or not all(
+                    key in pattern for key in ("id", "name", "body")
+                ):
+                    raise SMSImproperlyConfiguredError("Invalid patterns")
+        # return validated config
         return config
 
     @property

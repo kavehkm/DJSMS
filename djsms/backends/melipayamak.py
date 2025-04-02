@@ -1,4 +1,5 @@
 # standard
+import re
 from typing import Any, List
 
 # requests
@@ -6,13 +7,36 @@ import requests
 
 # internal
 from .base import BaseBackend
-
+from ..errors import SMSImproperlyConfiguredError
 
 BASE_URL = "https://console.melipayamak.com/api"
 
 
 class MeliPayamak(BaseBackend):
     """Meli Payamak"""
+
+    @staticmethod
+    def validate_config(config: dict) -> dict:
+        token = config.get("token")
+        number = config.get("number")
+        patterns = config.get("patterns")
+
+        # validate token
+        if not token or not isinstance(token, str):
+            raise SMSImproperlyConfiguredError("Invalid token.")
+        # validate number
+        if number is not None:
+            if not isinstance(number, str) or re.match("^\d{4,}$", number):
+                raise SMSImproperlyConfiguredError("Invalid number.")
+        # validate patterns
+        if not isinstance(patterns, list):
+            raise SMSImproperlyConfiguredError("Invalid patterns.")
+        for pattern in patterns:
+            if not isinstance(pattern, dict) or not all(
+                key in pattern for key in ("id", "name", "body")
+            ):
+                raise SMSImproperlyConfiguredError("Invalid patterns")
+        return config
 
     @property
     def token(self) -> str:

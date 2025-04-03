@@ -2,6 +2,4 @@
 from .melipayamak import MeliPayamak
 
 
-BACKENDS = [
-    MeliPayamak
-]
+BACKENDS = [MeliPayamak]

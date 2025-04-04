@@ -43,7 +43,7 @@ class BaseBackend(object):
         raise NotImplementedError
 
     def send_pattern(
-        self, pattern_id: int, to: str, args: List[str], **kwargs: Any
+        self, name: str, to: str, args: List[str], **kwargs: Any
     ) -> Message:
         raise NotImplementedError
 

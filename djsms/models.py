@@ -14,10 +14,8 @@ class Message(models.Model):
         (FAILED, "Failed"),
     )
 
-    backend = models.CharField(max_length=150)
     task_id = models.UUIDField(null=True)
     status = models.CharField(max_length=7, choices=STATUSES, default=PENDING)
-    text = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

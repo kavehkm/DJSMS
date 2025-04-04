@@ -15,6 +15,9 @@ BASE_URL = "https://console.melipayamak.com/api"
 class MeliPayamak(BaseBackend):
     """Meli Payamak"""
 
+    identifier = "melipayamak"
+    label = "MeliPayamak"
+
     @staticmethod
     def validate_config(config: dict) -> dict:
         token = config.get("token")

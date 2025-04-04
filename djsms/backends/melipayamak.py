@@ -2,12 +2,12 @@
 import re
 from typing import Any, List
 
-# requests
-import requests
-
 # internal
+from .. import request
+from ..models import Message
 from .base import BaseBackend
 from ..errors import SMSImproperlyConfiguredError
+
 
 BASE_URL = "https://console.melipayamak.com/api"
 
@@ -56,20 +56,19 @@ class MeliPayamak(BaseBackend):
     def get_udh(self, kwargs: Any) -> str:
         return kwargs.get("udh", self._get_config("udh", ""))
 
-    def get_pattern(self, pattern_id: int) -> dict:
+    def get_pattern(self, name: str) -> dict:
         patterns = self.patterns or []
         for pattern in patterns:
-            if pattern["id"] == pattern_id:
+            if pattern["name"] == name:
                 return pattern
         raise SMSImproperlyConfiguredError("Pattern does not exist.")
 
-    def send(self, text: str, to: str, **kwargs: Any) -> dict:
+    def send(self, text: str, to: str, **kwargs: Any) -> Message:
         url = self.get_url("send/simple")
         data = {"text": text, "to": to, "from": self.get_from(kwargs)}
-        res = requests.post(url, json=data)
-        return res.json()
+        return request.post(url, json=data)
 
-    def send_bulk(self, text: str, to: List[str], **kwargs: Any) -> dict:
+    def send_bulk(self, text: str, to: List[str], **kwargs: Any) -> Message:
         url = self.get_url("send/advanced")
         data = {
             "text": text,
@@ -77,8 +76,7 @@ class MeliPayamak(BaseBackend):
             "from": self.get_from(kwargs),
             "udh": self.get_udh(kwargs),
         }
-        res = requests.post(url, json=data)
-        return res.json()
+        return request.post(url, json=data)
 
     def send_schedule(
         self,
@@ -90,7 +88,7 @@ class MeliPayamak(BaseBackend):
         hours: int,
         minutes: int,
         **kwargs: Any,
-    ) -> dict:
+    ) -> Message:
         url = self.get_url("send/schedule")
         data = {
             "message": text,
@@ -101,21 +99,19 @@ class MeliPayamak(BaseBackend):
         # check for period
         if "period" in kwargs:
             data["period"] = kwargs["period"]
-        res = requests.post(url, json=data)
-        return res.json()
+        return request.post(url, json=data)
 
     def send_pattern(
-        self, pattern_id: int, to: str, args: List[str], **kwargs: Any
-    ) -> dict:
+        self, name: str, to: str, args: List[str], **kwargs: Any
+    ) -> Message:
         url = self.get_url("send/shared")
-        pattern = self.get_pattern(pattern_id)
+        pattern = self.get_pattern(name)
         data = {"bodyId": pattern["id"], "to": to, "args": args}
-        res = requests.post(url, json=data)
-        return res.json()
+        return request.post(url, json=data)
 
     def send_multiple(
         self, texts: List[str], recipients: List[str], **kwargs: Any
-    ) -> dict:
+    ) -> Message:
         url = self.get_url("send/multiple")
         data = {
             "to": recipients,
@@ -123,16 +119,9 @@ class MeliPayamak(BaseBackend):
             "from": self.get_from(kwargs),
             "udh": self.get_udh(kwargs),
         }
-        res = requests.post(url, json=data)
-        return res.json()
+        return request.post(url, json=data)
 
     def get_credit(self) -> int:
         url = self.get_url("receive/credit")
-        res = requests.get(url)
-        return res.json()
-
-    def get_status(self, ids: List[int]) -> dict:
-        url = self.get_url("receive/status")
-        data = {"recIds": ids}
-        res = requests.post(url, json=data)
-        return res.json()
+        res = request.get(url)
+        return res.json()["amount"]

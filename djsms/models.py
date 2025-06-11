@@ -16,6 +16,9 @@ class Message(models.Model):
 
     task_id = models.UUIDField(null=True)
     status = models.CharField(max_length=7, choices=STATUSES, default=PENDING)
+    text = models.TextField(max_length=1000, null=True)
+    recipient = models.TextField(max_length=1000, null=True)
+    data = models.JSONField(default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

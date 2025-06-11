@@ -69,7 +69,7 @@ class MeliPayamak(BaseBackend):
     def send(self, text: str, to: str, **kwargs: Any) -> Message:
         url = self.get_url("send/simple")
         data = {"text": text, "to": to, "from": self.get_from(kwargs)}
-        return request.post(url, json=data)
+        return request.send_message(text, to, url, json=data)
 
     def send_bulk(self, text: str, to: List[str], **kwargs: Any) -> Message:
         url = self.get_url("send/advanced")
@@ -79,7 +79,7 @@ class MeliPayamak(BaseBackend):
             "from": self.get_from(kwargs),
             "udh": self.get_udh(kwargs),
         }
-        return request.post(url, json=data)
+        return request.send_message(text, ",".join(to), url, json=data)
 
     def send_schedule(
         self,
@@ -102,7 +102,7 @@ class MeliPayamak(BaseBackend):
         # check for period
         if "period" in kwargs:
             data["period"] = kwargs["period"]
-        return request.post(url, json=data)
+        return request.send_message(text, to, url, json=data)
 
     def send_pattern(
         self, name: str, to: str, args: List[str], **kwargs: Any
@@ -110,7 +110,7 @@ class MeliPayamak(BaseBackend):
         url = self.get_url("send/shared")
         pattern = self.get_pattern(name)
         data = {"bodyId": pattern["id"], "to": to, "args": args}
-        return request.post(url, json=data)
+        return request.send_message(pattern["body"].format(*args), to, url, json=data)
 
     def send_multiple(
         self, texts: List[str], recipients: List[str], **kwargs: Any
@@ -122,7 +122,9 @@ class MeliPayamak(BaseBackend):
             "from": self.get_from(kwargs),
             "udh": self.get_udh(kwargs),
         }
-        return request.post(url, json=data)
+        return request.send_message(
+            ",".join(texts), ",".join(recipients), url, json=data
+        )
 
     def get_credit(self) -> int:
         url = self.get_url("receive/credit")

@@ -2,8 +2,9 @@
 import requests
 
 # internal
-from .models import Message
 from .conf import djsms_conf
+from .models import Message
+from .hooks import send_message_hook
 from .consts import HTTP_200_OK, HTTP_201_CREATED
 from .errors import SMSError, SMSImproperlyConfiguredError
 
@@ -14,7 +15,7 @@ except ImportError:
     async_task = None
 
 
-def req(method: str, url: str, **kwargs) -> requests.Response:
+def _req(method: str, url: str, **kwargs) -> requests.Response:
     try:
         res = getattr(requests, method)(url, **kwargs)
     except Exception as e:
@@ -25,38 +26,38 @@ def req(method: str, url: str, **kwargs) -> requests.Response:
 
 
 def get(url: str, **kwargs) -> requests.Response:
-    return req("get", url, **kwargs)
+    return _req("get", url, **kwargs)
 
 
-def _post(url: str, **kwargs) -> requests.Response:
-    return req("post", url, **kwargs)
+def post(url: str, **kwargs) -> requests.Response:
+    return _req("post", url, **kwargs)
 
 
-def sync_post(url: str, **kwargs) -> Message:
-    _post(url, **kwargs)
-    # create and return success message
-    return Message.objects.create(status=Message.SUCCESS)
+def send_sync_message(text: str, recipient: str, url: str, **kwargs) -> Message:
+    post(url, **kwargs)
+    return Message.objects.create(
+        text=text,
+        recipient=recipient,
+        status=Message.SUCCESS,
+        data={"url": url, **kwargs},
+    )
 
 
-def _async_post_hook(task) -> None:
-    message = Message.objects.filter(task_id=task.id).first()
-    message.status = Message.SUCCESS if task.success else Message.FAILED
-    message.save(update_fields=["status"])
-
-
-def async_post(url: str, **kwargs) -> Message:
-    # check django_q installation
+def send_async_message(text: str, recipient: str, url: str, **kwargs) -> Message:
     if async_task is None:
-        raise SMSImproperlyConfiguredError("django_q did not install.")
-    # send async post
-    task_id = async_task(_post, url, **kwargs, hook=_async_post_hook)  # noqa
-    # create and return pending message with given task_id
-    return Message.objects.create(task_id=task_id, status=Message.PENDING)
+        raise SMSImproperlyConfiguredError("django_q should be installed first.")
+    task_id = async_task(post, url, **kwargs, hook=send_message_hook)  # noqa
+    return Message.objects.create(
+        task_id=task_id,
+        text=text,
+        recipient=recipient,
+        status=Message.PENDING,
+        data={"url": url, **kwargs},
+    )
 
 
-def post(url: str, **kwargs) -> Message:
-    # check for use django_q
+def send_message(text: str, recipient: str, url: str, **kwargs) -> Message:
     if djsms_conf.use_django_q:
-        return async_post(url, **kwargs)
+        return send_async_message(text, recipient, url, **kwargs)
     else:
-        return sync_post(url, **kwargs)
+        return send_sync_message(text, recipient, url, **kwargs)

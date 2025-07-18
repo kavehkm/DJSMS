@@ -130,8 +130,26 @@ class IPPanel(BaseBackend):
     def send_multiple(
         self, texts: List[str], recipients: List[str], **kwargs: Any
     ) -> Message:
-
-        raise NotImplementedError
+        # get url
+        url = self.get_url("/api/send")
+        # check length of texts and recipients
+        if len(texts) != len(recipients):
+            raise SMSImproperlyConfiguredError("length of texts and recipients must be same.")
+        # create params base on ippanel acceptable format
+        params = [
+            {
+                "recipients": [recipients[item_index]],
+                "message": texts[item_index]
+            }
+            for item_index in range(len(texts))
+        ]
+        # prepare request body
+        data = {
+            "sending_type": "peer_to_peer",
+            "from_number": self.from_number,
+            "params": params
+        }
+        return self._send_message(",".join(texts), ",".join(recipients), url, json=data)
 
     def get_credit(self) -> int:
         url = self.get_url("/api/payment/credit/mine")

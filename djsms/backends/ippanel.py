@@ -89,8 +89,37 @@ class IPPanel(BaseBackend):
         minutes: int,
         **kwargs: Any,
     ) -> Message:
-
-        raise NotImplementedError
+        # get url
+        url = self.get_url("/api/send")
+        # try to find seconds from kwargs
+        seconds = kwargs.get("seconds", 0)
+        # clean month
+        if len(str(month)) == 1:
+            month = f"0{month}"
+        # clean day
+        if len(str(day)) == 1:
+            day = f"0{day}"
+        # clean hours
+        if len(str(hours)) == 1:
+            hours = f"0{hours}"
+        # clean minutes
+        if len(str(minutes)) == 1:
+            minutes = f"0{minutes}"
+        # clean seconds
+        if len(str(seconds)) == 1:
+            seconds = f"0{seconds}"
+        # prepare request body
+        data = {
+            "sending_type": "webservice",
+            "from_number": self.from_number,
+            "message": text,
+            "params": {
+                "recipients": [to]
+            },
+            "send_time": f"{year}-{month}-{day} {hours}:{minutes}:{seconds}"
+        }
+        # send message
+        return self._send_message(text, to, url, json=data)
 
     def send_pattern(
         self, name: str, to: str, args: List[str], **kwargs: Any

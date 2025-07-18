@@ -25,6 +25,9 @@ class IPPanel(BaseBackend):
         # validate token
         if not token or not isinstance(token, str):
             raise SMSImproperlyConfiguredError("Invalid token.")
+        # validate from_number
+        if not from_number or not isinstance(from_number, str) or not re.match(r"^\+98\d+$", from_number):
+            raise SMSImproperlyConfiguredError("Invalid from number.")
 
         # return validated config
         return config

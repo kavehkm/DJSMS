@@ -7,6 +7,7 @@ from django.utils.functional import cached_property
 # internal
 from .base import BaseBackend
 from .melipayamak import MeliPayamak
+from .ippanel import IPPanel
 from ..errors import SMSBackendDoesNotExistError
 
 
@@ -15,7 +16,7 @@ class BackendsPool(object):
 
     @cached_property
     def backends(self) -> List:
-        return [MeliPayamak]
+        return [MeliPayamak, IPPanel]
 
     @cached_property
     def as_choices(self) -> List[Tuple[str, str]]:

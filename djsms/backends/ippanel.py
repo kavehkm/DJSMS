@@ -1,5 +1,6 @@
 # standard
-from typing import Any, List
+import re
+from typing import Any, List, Dict
 
 # internal
 from .. import request
@@ -19,8 +20,32 @@ class IPPanel(BaseBackend):
 
     @staticmethod
     def validate_config(config: dict) -> dict:
+        token = config.get("token")
+        from_number = config.get("from")
+        # validate token
+        if not token or not isinstance(token, str):
+            raise SMSImproperlyConfiguredError("Invalid token.")
 
+        # return validated config
         return config
+
+    @property
+    def token(self) -> str:
+        return self._get_config("token")
+
+    @property
+    def headers(self) -> Dict[str, str]:
+        return {
+            "Authorization": self.token,
+            "Content-Type": "application/json"
+        }
+
+    def _send_message(self, text: str, recipient: str, url: str, **kwargs) -> Message:
+        return request.send_message(text, recipient, url, headers=self.headers, **kwargs)
+
+    @staticmethod
+    def get_url(path):
+        return "{base_url}/{path}".format(base_url=BASE_URL, path=path)
 
     def send(self, text: str, to: str, **kwargs: Any) -> Message:
 
@@ -57,5 +82,7 @@ class IPPanel(BaseBackend):
         raise NotImplementedError
 
     def get_credit(self) -> int:
-
-        raise NotImplementedError
+        url = self.get_url("/api/payment/credit/mine")
+        res = request.get(url, headers=self.headers).json()
+        remain_credit = res["data"]["credit"]
+        return int(remain_credit)

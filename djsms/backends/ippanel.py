@@ -55,8 +55,16 @@ class IPPanel(BaseBackend):
         return "{base_url}/{path}".format(base_url=BASE_URL, path=path)
 
     def send(self, text: str, to: str, **kwargs: Any) -> Message:
-
-        raise NotImplementedError
+        url = self.get_url("/api/send")
+        data = {
+            "sending_type": "webservice",
+            "from_number": self.from_number,
+            "message": text,
+            "params": {
+                "recipients": [to]
+            }
+        }
+        return self._send_message(text, to, url, json=data)
 
     def send_bulk(self, text: str, to: List[str], **kwargs: Any) -> Message:
 

@@ -71,6 +71,12 @@ class IPPanel(BaseBackend):
     def send_message_url(self):
         return self.get_url("/api/send")
 
+    def get_pattern(self, name: str) -> dict:
+        for pattern in self.patterns:
+            if pattern["name"] == name:
+                return pattern
+        raise SMSImproperlyConfiguredError("Pattern does not exist.")
+
     def send(self, text: str, to: str, **kwargs: Any) -> Message:
         data = {
             "sending_type": "webservice",

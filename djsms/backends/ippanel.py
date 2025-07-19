@@ -1,5 +1,6 @@
 # standard
 import re
+from zoneinfo import ZoneInfo
 from typing import Any, List, Dict
 
 # dj
@@ -121,6 +122,8 @@ class IPPanel(BaseBackend):
         gregorian_datetime = jdatetime.datetime(
             year=year, month=month, day=day, hour=hours, minute=minutes, second=seconds
         ).togregorian()
+        # set tehran timezone on gregorian_datetime
+        gregorian_datetime = gregorian_datetime.replace(tzinfo=ZoneInfo("Asia/Tehran"))
         # convert time to utc
         send_time = gregorian_datetime.astimezone(timezone.timezone.utc)
         # prepare request body

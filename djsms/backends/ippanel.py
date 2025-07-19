@@ -22,13 +22,22 @@ class IPPanel(BaseBackend):
     def validate_config(config: dict) -> dict:
         token = config.get("token")
         from_number = config.get("from")
+        patterns = config.get("patterns")
         # validate token
         if not token or not isinstance(token, str):
             raise SMSImproperlyConfiguredError("Invalid token.")
         # validate from_number
         if not from_number or not isinstance(from_number, str) or not re.match(r"^\+98\d+$", from_number):
             raise SMSImproperlyConfiguredError("Invalid from number.")
-
+        # validate patterns
+        if patterns is not None:
+            if not isinstance(patterns, list):
+                raise SMSImproperlyConfiguredError("Invalid patterns.")
+            for pattern in patterns:
+                if not isinstance(pattern, dict) or not all(
+                    key in pattern for key in ("code", "name", "body")
+                ):
+                    raise SMSImproperlyConfiguredError("Invalid patterns")
         # return validated config
         return config
 

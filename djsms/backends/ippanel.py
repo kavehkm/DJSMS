@@ -35,7 +35,7 @@ class IPPanel(BaseBackend):
                 raise SMSImproperlyConfiguredError("Invalid patterns.")
             for pattern in patterns:
                 if not isinstance(pattern, dict) or not all(
-                    key in pattern for key in ("code", "name", "body")
+                    key in pattern for key in ("code", "name", "body", "arg_keys")
                 ):
                     raise SMSImproperlyConfiguredError("Invalid patterns")
         # return validated config

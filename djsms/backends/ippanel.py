@@ -88,8 +88,8 @@ class IPPanel(BaseBackend):
         raise SMSImproperlyConfiguredError("Pattern does not exist.")
 
     @staticmethod
-    def validate_phone_number(phone_number: str, prefix="+98") -> str:
-        if not phone_number.startswith("+98"):
+    def clean_phone_number(phone_number: str, prefix="+98") -> str:
+        if not phone_number.startswith(prefix):
             if phone_number.startswith("09"):
                 # remove 0 from phone_number
                 phone_number = phone_number[1:]

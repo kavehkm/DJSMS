@@ -142,7 +142,7 @@ class IPPanel(BaseBackend):
     ) -> Message:
         # find pattern or raise SMSImproperlyConfiguredError
         pattern = self.get_pattern(name)
-        arg_keys = pattern.get("arg_keys")
+        arg_keys = pattern.get("args_key")
         # check length of args and args_key
         if len(args) != len(arg_keys):
             raise SMSImproperlyConfiguredError(

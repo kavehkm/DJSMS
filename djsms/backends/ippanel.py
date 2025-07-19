@@ -104,6 +104,9 @@ class IPPanel(BaseBackend):
         return phone_number
 
     def send(self, text: str, to: str, **kwargs: Any) -> Message:
+        # clean and validate phone number
+        to = self.validate_phone_number(to)
+        # prepare request body
         data = {
             "sending_type": "webservice",
             "from_number": self.from_number,
@@ -113,6 +116,9 @@ class IPPanel(BaseBackend):
         return self._send_message(text, to, self.send_message_url, json=data)
 
     def send_bulk(self, text: str, to: List[str], **kwargs: Any) -> Message:
+        # clean and validate phone numbers
+        to = [self.validate_phone_number(phone_number) for phone_number in to]
+        # prepare request body
         data = {
             "sending_type": "webservice",
             "from_number": self.from_number,
@@ -132,6 +138,8 @@ class IPPanel(BaseBackend):
         minutes: int,
         **kwargs: Any,
     ) -> Message:
+        # clean and validate phone number
+        to = self.validate_phone_number(to)
         # get seconds from kwargs or default to 0
         seconds = kwargs.get("seconds", 0)
         # create a datetime object and convert jalali date to gregorian date
@@ -156,6 +164,8 @@ class IPPanel(BaseBackend):
     def send_pattern(
         self, name: str, to: str, args: List[str], **kwargs: Any
     ) -> Message:
+        # clean and validate phone number
+        to = self.validate_phone_number(to)
         # find pattern or raise SMSImproperlyConfiguredError
         pattern = self.get_pattern(name)
         arg_keys = pattern.get("args_key")
@@ -182,6 +192,8 @@ class IPPanel(BaseBackend):
     def send_multiple(
         self, texts: List[str], recipients: List[str], **kwargs: Any
     ) -> Message:
+        # clean and validate phone numbers
+        recipients = [self.validate_phone_number(phone_number) for phone_number in recipients]
         # check length of texts and recipients
         if len(texts) != len(recipients):
             raise SMSImproperlyConfiguredError(

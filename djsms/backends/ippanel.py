@@ -50,7 +50,7 @@ class IPPanel(BaseBackend):
         return self._get_config("token")
 
     @property
-    def from_number(self):
+    def from_number(self) -> str:
         return self._get_config("from")
 
     @property
@@ -61,18 +61,18 @@ class IPPanel(BaseBackend):
     def headers(self) -> Dict[str, str]:
         return {"Authorization": self.token, "Content-Type": "application/json"}
 
+    @property
+    def send_message_url(self) -> str:
+        return self.get_url("/api/send")
+
+    @staticmethod
+    def get_url(path: str) -> str:
+        return "{base_url}/{path}".format(base_url=BASE_URL, path=path)
+
     def _send_message(self, text: str, recipient: str, url: str, **kwargs) -> Message:
         return request.send_message(
             text, recipient, url, headers=self.headers, **kwargs
         )
-
-    @staticmethod
-    def get_url(path):
-        return "{base_url}/{path}".format(base_url=BASE_URL, path=path)
-
-    @property
-    def send_message_url(self):
-        return self.get_url("/api/send")
 
     def get_pattern(self, name: str) -> dict:
         for pattern in self.patterns:

@@ -143,8 +143,16 @@ class IPPanel(BaseBackend):
     def send_pattern(
         self, name: str, to: str, args: List[str], **kwargs: Any
     ) -> Message:
-
-        raise NotImplementedError
+        pattern = self.get_pattern(name)
+        arguments = zip(pattern.get("arg_keys"), args)
+        data = {
+            "sending_type": "pattern",
+            "from_number": self.from_number,
+            "code": pattern.get("code"),
+            "recipients": [to],
+            "params": dict(arguments)
+        }
+        return self._send_message(pattern["body"].format(*args), to, self.send_message_url, json=data)
 
     def send_multiple(
         self, texts: List[str], recipients: List[str], **kwargs: Any

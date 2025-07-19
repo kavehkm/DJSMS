@@ -2,6 +2,12 @@
 import re
 from typing import Any, List, Dict
 
+# dj
+from django.utils import timezone
+
+# datetime
+import jdatetime
+
 # internal
 from .. import request
 from ..models import Message
@@ -109,30 +115,21 @@ class IPPanel(BaseBackend):
         minutes: int,
         **kwargs: Any,
     ) -> Message:
-        # try to find seconds from kwargs
+        # get seconds from kwargs or default to 0
         seconds = kwargs.get("seconds", 0)
-        # clean month
-        if len(str(month)) == 1:
-            month = f"0{month}"
-        # clean day
-        if len(str(day)) == 1:
-            day = f"0{day}"
-        # clean hours
-        if len(str(hours)) == 1:
-            hours = f"0{hours}"
-        # clean minutes
-        if len(str(minutes)) == 1:
-            minutes = f"0{minutes}"
-        # clean seconds
-        if len(str(seconds)) == 1:
-            seconds = f"0{seconds}"
+        # create a datetime object and convert jalali date to gregorian date
+        gregorian_datetime =  jdatetime.datetime(
+            year=year, month=month, day=day, hour=hours, minute=minutes, second=seconds
+        ).togregorian()
+        # convert time to utc
+        send_time = gregorian_datetime.astimezone(timezone.timezone.utc)
         # prepare request body
         data = {
             "sending_type": "webservice",
             "from_number": self.from_number,
             "message": text,
             "params": {"recipients": [to]},
-            "send_time": f"{year}-{month}-{day} {hours}:{minutes}:{seconds}",
+            "send_time": send_time.strftime("%Y-%m-%d %H:%M:%S"),
         }
         # send message
         return self._send_message(text, to, self.send_message_url, json=data)

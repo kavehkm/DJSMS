@@ -27,7 +27,11 @@ class IPPanel(BaseBackend):
         if not token or not isinstance(token, str):
             raise SMSImproperlyConfiguredError("Invalid token.")
         # validate from_number
-        if not from_number or not isinstance(from_number, str) or not re.match(r"^\+98\d+$", from_number):
+        if (
+            not from_number
+            or not isinstance(from_number, str)
+            or not re.match(r"^\+98\d+$", from_number)
+        ):
             raise SMSImproperlyConfiguredError("Invalid from number.")
         # validate patterns
         if patterns is not None:
@@ -55,13 +59,12 @@ class IPPanel(BaseBackend):
 
     @property
     def headers(self) -> Dict[str, str]:
-        return {
-            "Authorization": self.token,
-            "Content-Type": "application/json"
-        }
+        return {"Authorization": self.token, "Content-Type": "application/json"}
 
     def _send_message(self, text: str, recipient: str, url: str, **kwargs) -> Message:
-        return request.send_message(text, recipient, url, headers=self.headers, **kwargs)
+        return request.send_message(
+            text, recipient, url, headers=self.headers, **kwargs
+        )
 
     @staticmethod
     def get_url(path):
@@ -82,9 +85,7 @@ class IPPanel(BaseBackend):
             "sending_type": "webservice",
             "from_number": self.from_number,
             "message": text,
-            "params": {
-                "recipients": [to]
-            }
+            "params": {"recipients": [to]},
         }
         return self._send_message(text, to, self.send_message_url, json=data)
 
@@ -93,9 +94,7 @@ class IPPanel(BaseBackend):
             "sending_type": "webservice",
             "from_number": self.from_number,
             "message": text,
-            "params": {
-                "recipients": to
-            }
+            "params": {"recipients": to},
         }
         return self._send_message(text, ",".join(to), self.send_message_url, json=data)
 
@@ -132,10 +131,8 @@ class IPPanel(BaseBackend):
             "sending_type": "webservice",
             "from_number": self.from_number,
             "message": text,
-            "params": {
-                "recipients": [to]
-            },
-            "send_time": f"{year}-{month}-{day} {hours}:{minutes}:{seconds}"
+            "params": {"recipients": [to]},
+            "send_time": f"{year}-{month}-{day} {hours}:{minutes}:{seconds}",
         }
         # send message
         return self._send_message(text, to, self.send_message_url, json=data)
@@ -150,31 +147,34 @@ class IPPanel(BaseBackend):
             "from_number": self.from_number,
             "code": pattern.get("code"),
             "recipients": [to],
-            "params": dict(arguments)
+            "params": dict(arguments),
         }
-        return self._send_message(pattern["body"].format(*args), to, self.send_message_url, json=data)
+        return self._send_message(
+            pattern["body"].format(*args), to, self.send_message_url, json=data
+        )
 
     def send_multiple(
         self, texts: List[str], recipients: List[str], **kwargs: Any
     ) -> Message:
         # check length of texts and recipients
         if len(texts) != len(recipients):
-            raise SMSImproperlyConfiguredError("length of texts and recipients must be same.")
+            raise SMSImproperlyConfiguredError(
+                "length of texts and recipients must be same."
+            )
         # create params base on ippanel acceptable format
         params = [
-            {
-                "recipients": [recipients[item_index]],
-                "message": texts[item_index]
-            }
+            {"recipients": [recipients[item_index]], "message": texts[item_index]}
             for item_index in range(len(texts))
         ]
         # prepare request body
         data = {
             "sending_type": "peer_to_peer",
             "from_number": self.from_number,
-            "params": params
+            "params": params,
         }
-        return self._send_message(",".join(texts), ",".join(recipients), self.send_message_url, json=data)
+        return self._send_message(
+            ",".join(texts), ",".join(recipients), self.send_message_url, json=data
+        )
 
     def get_credit(self) -> int:
         url = self.get_url("/api/payment/credit/mine")

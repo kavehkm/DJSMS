@@ -51,7 +51,7 @@ class IPPanel(BaseBackend):
 
     @property
     def patterns(self) -> list:
-        return self._get_config("patterns")
+        return self._get_config("patterns", [])
 
     @property
     def headers(self) -> Dict[str, str]:

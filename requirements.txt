@@ -10,9 +10,11 @@ docutils==0.21.2
 id==1.5.0
 idna==3.10
 importlib_metadata==8.6.1
+jalali_core==1.0.0
 jaraco.classes==3.4.0
 jaraco.context==6.0.1
 jaraco.functools==4.1.0
+jdatetime==5.2.0
 jeepney==0.9.0
 keyring==25.6.0
 markdown-it-py==3.0.0

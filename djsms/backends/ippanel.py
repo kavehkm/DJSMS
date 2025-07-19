@@ -63,8 +63,11 @@ class IPPanel(BaseBackend):
     def get_url(path):
         return "{base_url}/{path}".format(base_url=BASE_URL, path=path)
 
+    @property
+    def send_message_url(self):
+        return self.get_url("/api/send")
+
     def send(self, text: str, to: str, **kwargs: Any) -> Message:
-        url = self.get_url("/api/send")
         data = {
             "sending_type": "webservice",
             "from_number": self.from_number,
@@ -73,10 +76,9 @@ class IPPanel(BaseBackend):
                 "recipients": [to]
             }
         }
-        return self._send_message(text, to, url, json=data)
+        return self._send_message(text, to, self.send_message_url, json=data)
 
     def send_bulk(self, text: str, to: List[str], **kwargs: Any) -> Message:
-        url = self.get_url("/api/send")
         data = {
             "sending_type": "webservice",
             "from_number": self.from_number,
@@ -85,7 +87,7 @@ class IPPanel(BaseBackend):
                 "recipients": to
             }
         }
-        return self._send_message(text, ",".join(to), url, json=data)
+        return self._send_message(text, ",".join(to), self.send_message_url, json=data)
 
     def send_schedule(
         self,
@@ -98,8 +100,6 @@ class IPPanel(BaseBackend):
         minutes: int,
         **kwargs: Any,
     ) -> Message:
-        # get url
-        url = self.get_url("/api/send")
         # try to find seconds from kwargs
         seconds = kwargs.get("seconds", 0)
         # clean month
@@ -128,7 +128,7 @@ class IPPanel(BaseBackend):
             "send_time": f"{year}-{month}-{day} {hours}:{minutes}:{seconds}"
         }
         # send message
-        return self._send_message(text, to, url, json=data)
+        return self._send_message(text, to, self.send_message_url, json=data)
 
     def send_pattern(
         self, name: str, to: str, args: List[str], **kwargs: Any
@@ -139,8 +139,6 @@ class IPPanel(BaseBackend):
     def send_multiple(
         self, texts: List[str], recipients: List[str], **kwargs: Any
     ) -> Message:
-        # get url
-        url = self.get_url("/api/send")
         # check length of texts and recipients
         if len(texts) != len(recipients):
             raise SMSImproperlyConfiguredError("length of texts and recipients must be same.")
@@ -158,7 +156,7 @@ class IPPanel(BaseBackend):
             "from_number": self.from_number,
             "params": params
         }
-        return self._send_message(",".join(texts), ",".join(recipients), url, json=data)
+        return self._send_message(",".join(texts), ",".join(recipients), self.send_message_url, json=data)
 
     def get_credit(self) -> int:
         url = self.get_url("/api/payment/credit/mine")

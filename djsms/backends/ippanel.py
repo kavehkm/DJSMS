@@ -50,6 +50,10 @@ class IPPanel(BaseBackend):
         return self._get_config("from")
 
     @property
+    def patterns(self) -> list:
+        return self._get_config("patterns")
+
+    @property
     def headers(self) -> Dict[str, str]:
         return {
             "Authorization": self.token,

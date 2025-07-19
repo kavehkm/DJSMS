@@ -87,6 +87,22 @@ class IPPanel(BaseBackend):
                 return pattern
         raise SMSImproperlyConfiguredError("Pattern does not exist.")
 
+    @staticmethod
+    def validate_phone_number(phone_number: str, prefix="+98") -> str:
+        if not phone_number.startswith("+98"):
+            if phone_number.startswith("09"):
+                # remove 0 from phone_number
+                phone_number = phone_number[1:]
+                # join prefix to phone_number
+                phone_number = "{prefix}{phone_number}".format(
+                    prefix=prefix,
+                    phone_number=phone_number
+                )
+            else:
+                raise SMSImproperlyConfiguredError("Invalid recipient phone number.")
+        # return cleaned phone_number
+        return phone_number
+
     def send(self, text: str, to: str, **kwargs: Any) -> Message:
         data = {
             "sending_type": "webservice",

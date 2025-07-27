@@ -1,12 +1,13 @@
 # standard
 import re
+from datetime import timezone
 from zoneinfo import ZoneInfo
 from typing import Any, List, Dict
 
 # dj
 from django.utils import timezone
 
-# datetime
+# jdatetime
 import jdatetime
 
 # internal
@@ -149,7 +150,7 @@ class IPPanel(BaseBackend):
         # set tehran timezone on gregorian_datetime
         gregorian_datetime = gregorian_datetime.replace(tzinfo=ZoneInfo("Asia/Tehran"))
         # convert time to utc
-        send_time = gregorian_datetime.astimezone(timezone.timezone.utc)
+        send_time = gregorian_datetime.astimezone(timezone.utc)
         # prepare request body
         data = {
             "sending_type": "webservice",

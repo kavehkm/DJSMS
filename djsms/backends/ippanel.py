@@ -46,7 +46,7 @@ class IPPanel(BaseBackend):
                 raise SMSImproperlyConfiguredError("Invalid patterns.")
             for pattern in patterns:
                 if not isinstance(pattern, dict) or not all(
-                    key in pattern for key in ("code", "name", "body", "args_key")
+                    key in pattern for key in ("code", "name", "body", "arg_keys")
                 ):
                     raise SMSImproperlyConfiguredError("Invalid patterns")
         # return validated config
@@ -168,8 +168,8 @@ class IPPanel(BaseBackend):
         to = self.clean_phone_number(to)
         # find pattern or raise SMSImproperlyConfiguredError
         pattern = self.get_pattern(name)
-        arg_keys = pattern.get("args_key")
-        # check length of args and args_key
+        arg_keys = pattern.get("arg_keys")
+        # check length of args and arg_keys
         if len(args) != len(arg_keys):
             raise SMSImproperlyConfiguredError(
                 "length of args and arg_keys must be same."

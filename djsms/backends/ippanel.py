@@ -46,7 +46,7 @@ class IPPanel(BaseBackend):
                 raise SMSImproperlyConfiguredError("Invalid patterns.")
             for pattern in patterns:
                 if not isinstance(pattern, dict) or not all(
-                    key in pattern for key in ("code", "name", "body", "arg_keys")
+                    key in pattern for key in ("id", "name", "body", "arg_keys")
                 ):
                     raise SMSImproperlyConfiguredError("Invalid patterns")
         # return validated config
@@ -180,7 +180,7 @@ class IPPanel(BaseBackend):
         data = {
             "sending_type": "pattern",
             "from_number": self.from_number,
-            "code": pattern.get("code"),
+            "code": pattern.get("id"),
             "recipients": [to],
             "params": dict(arguments),
         }
